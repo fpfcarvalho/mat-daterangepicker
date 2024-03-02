@@ -29,11 +29,12 @@ export class Homepage implements OnInit {
 		showCustomRanges: new FormControl(false)
 	})
 
-	startDate = null
-	endDate = null
+	startDate = null;
+	endDate = null;
+	fullDate = null;
 
 	minDate = new Date(2020, 7, 13);
-  	maxDate = new Date(2020, 9, 18);
+  maxDate = new Date(2020, 9, 18);
 
 	html = `
 	\`\`\`html
@@ -66,13 +67,20 @@ export class Homepage implements OnInit {
 	}
 	\`\`\`
 	`;
-	
+
 
 	constructor(public _componentPageTitle: ComponentPageTitle) {}
 
 	ngOnInit(): void {
 		this._componentPageTitle.title = '';
 	}
+
+  xpto(event: { startDate: Date, endDate: Date }) {
+		const startDate = new Date(event.startDate).toISOString().split('T')[0];
+		const endDate = new Date(event.endDate).toISOString().split('T')[0];
+
+		this.fullDate = startDate + ' - ' + endDate;
+  }
 }
 
 const routes: Routes = [ {path: '', component: Homepage}];

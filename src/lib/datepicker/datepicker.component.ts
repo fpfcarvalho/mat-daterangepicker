@@ -34,9 +34,9 @@ import { take } from 'rxjs/operators';
 import { DEFAULT_DATES_RANGES } from './default-ranges';
 
 export interface CustomRange<D> {
-	name: string
-	startDate: D | Date
-	endDate: D | Date
+  name: string;
+  startDate: D | Date;
+  endDate: D | Date;
 }
 
 export const MAT_DEFAULT_DATES_RANGES = new InjectionToken<CustomRange<any>[]>('Custom Ranges')
@@ -48,209 +48,217 @@ export const MAT_DEFAULT_DATES_RANGES = new InjectionToken<CustomRange<any>[]>('
   changeDetection: ChangeDetectionStrategy.OnPush,
   encapsulation: ViewEncapsulation.None,
   providers: [
-	{provide: MAT_DEFAULT_DATES_RANGES, useValue: []},
+  {provide: MAT_DEFAULT_DATES_RANGES, useValue: []},
   ]
 })
 export class MatDaterangepicker<D> extends MatDatepicker<D> implements OnInit, AfterViewInit, OnDestroy {
 
-	@Input() applyButton: boolean = true
-	@Input() dualView: boolean = true
-	@Input() showCustomRanges: boolean = false
+  @Input() applyButton = true;
+  @Input() dualView = true;
+  @Input() showCustomRanges = false;
 
-	@Output() apply = new EventEmitter()
+  @Output() apply = new EventEmitter();
 
-	customRanges = []
+  customRanges = [];
 
-	/** The currently selected date. */
-	get _selectedRangeEnd(): D | null { return this._validSelectedRangeEnd; }
-	set _selectedRangeEnd(value: D | null) { this._validSelectedRangeEnd = value; }
-	private _validSelectedRangeEnd: D | null = null;
+  /** The currently selected date. */
+  get _selectedRangeEnd(): D | null { return this.validSelectedRangeEnd; }
+  set _selectedRangeEnd(value: D | null) { this.validSelectedRangeEnd = value; }
+  private validSelectedRangeEnd: D | null = null;
 
-	/** Emits new selected date when selected date changes. */
-	readonly _selectedChangedRangeEnd = new Subject<D>();
-	readonly _clearRangeEnd = new Subject<D>();
-	_range: boolean = false;
+  /** Emits new selected date when selected date changes. */
+  readonly selectedChangedRangeEnd = new Subject<D>();
+  readonly clearRangeEnd = new Subject<D>();
+  range = false;
 
-	_datepickerInputRangeEnd: MatDatepickerInput<D>;
-	private _inputRangeEndSubscription = Subscription.EMPTY;
-	private _drDialog: MatDialog;
+  datepickerInputRangeEnd: MatDatepickerInput<D>;
+  private inputRangeEndSubscription = Subscription.EMPTY;
 
-	constructor(_drDialog: MatDialog,
-				private _drOverlay: Overlay,
-				private _drNgZone: NgZone,
-				private _drViewContainerRef: ViewContainerRef,
-				@Inject(MAT_DATEPICKER_SCROLL_STRATEGY) private _drScrollStrategy,
-				@Optional() public _drDateAdapter: DateAdapter<D>,
-				@Optional() private _drDir: Directionality,
-				@Optional() @Inject(DOCUMENT) private _drDocument: any,
-				@Inject(MAT_DEFAULT_DATES_RANGES) public _customRanges: CustomRange<D>[]) {
-		super(
-		_drDialog = Object.create(_drDialog),
-		_drOverlay,
-		_drNgZone,
-		_drViewContainerRef,
-		_drScrollStrategy,
-		_drDateAdapter,
-		_drDir,
-		_drDocument
-		);
+  constructor(
+    private drDialog: MatDialog,
+    private drOverlay: Overlay,
+    private drNgZone: NgZone,
+    private drViewContainerRef: ViewContainerRef,
+    @Inject(MAT_DATEPICKER_SCROLL_STRATEGY) private drScrollStrategy,
+    @Optional() public drDateAdapter: DateAdapter<D>,
+    @Optional() private drDir: Directionality,
+    @Optional() @Inject(DOCUMENT) private drDocument: any,
+    @Inject(MAT_DEFAULT_DATES_RANGES) public customRangesValues: CustomRange<D>[]
+  ) {
+    super(
+      drDialog = Object.create(drDialog),
+      drOverlay,
+      drNgZone,
+      drViewContainerRef,
+      drScrollStrategy,
+      drDateAdapter,
+      drDir,
+      drDocument
+    );
 
-		/*
-			This is a monkey patch workaround to support a new component for dialog/popup.
-			Because everything is freaking private in material, why would somone use protected anyway.
-		*/
-		this._drDialog = _drDialog;
-		this._drDialog.open = <any> function (...args: any[]) {
-			if (typeof args[0].createEmbeddedView !== 'function') {
-				args[0] = MatDaterangepickerContent;
-			}
-			return MatDialog.prototype.open.apply(_drDialog, args);
-		};
+    /*
+      This is a monkey patch workaround to support a new component for dialog/popup.
+      Because everything is freaking private in material, why would somone use protected anyway.
+    */
+    this.drDialog = drDialog;
+    // tslint:disable-next-line:only-arrow-functions
+    this.drDialog.open = function(...args: any[]) {
+      if (typeof args[0].createEmbeddedView !== 'function') {
+        args[0] = MatDaterangepickerContent;
+      }
+      return MatDialog.prototype.open.apply(drDialog, args);
+    };
 
-		// Object.defineProperty(this, '_calendarPortal', {
-		//   get: function () { return this.__calendarPortal; },
-		//   set: function (value) {
-		//     this.__calendarPortal = value;
-		//     if (value) {
-		//       value.component = MatDaterangepickerContent;
-		//     }
-		//   }
-		// })
+    // Object.defineProperty(this, '_calendarPortal', {
+    //   get: function () { return this.__calendarPortal; },
+    //   set: function (value) {
+    //     this.__calendarPortal = value;
+    //     if (value) {
+    //       value.component = MatDaterangepickerContent;
+    //     }
+    //   }
+    // })
 
-		this['_openAsPopup'] = () => {
-			const portal = new ComponentPortal<MatDaterangepickerContent<D>>(MatDaterangepickerContent,
-			this._drViewContainerRef);
+    this['_openAsPopup'] = () => {
+      const portal = new ComponentPortal<MatDaterangepickerContent<D>>(MatDaterangepickerContent,
+      this.drViewContainerRef);
 
-			this['_destroyPopup']();
-			this['_createPopup']();
-			this['_popupComponentRef'] = this['_popupRef']!.attach(portal);
-			this.forwardContentValues(this['_popupComponentRef'].instance);
+      this['_destroyPopup']();
+      this['_createPopup']();
+      this['_popupComponentRef'] = this['_popupRef']!.attach(portal);
+      this.forwardContentValues(this['_popupComponentRef'].instance);
 
-			// Update the position once the calendar has rendered.
-			this._drNgZone.onStable.asObservable().pipe(take(1)).subscribe(() => {
-				this['_popupRef']!.updatePosition();
-			});
-		}
-	}
+      // Update the position once the calendar has rendered.
+      this.drNgZone.onStable.asObservable().pipe(take(1)).subscribe(() => {
+        this['_popupRef']!.updatePosition();
+      });
+    }
+  }
 
-	ngOnInit(){
-		if(this.customRanges){
-			this._setCustomRanges()
-		}
-	}
+  ngOnInit(){
+    if (this.customRanges) {
+      this._setCustomRanges();
+    }
+  }
 
-	ngAfterViewInit(){
-	}
+  ngAfterViewInit(){
+  }
 
-	forwardContentValues(instance: MatDaterangepickerContent<D>) {
-		instance.datepicker = this;
-		instance.color = this.color;
-	}
+  forwardContentValues(instance: MatDaterangepickerContent<D>) {
+    instance.datepicker = this;
+    instance.color = this.color;
+  }
 
-	ngOnDestroy() {
-		super.ngOnDestroy();
-		this._inputRangeEndSubscription.unsubscribe();
-	}
+  ngOnDestroy() {
+    super.ngOnDestroy();
+    this.inputRangeEndSubscription.unsubscribe();
+  }
 
-	selectRangeEnd(date: D): void {
-		if (!this._range) {
-			super.select(date);
-		} else {
-			if (!date) {
-				if (this._selected && this._selectedRangeEnd) {
-					super.select(null);
-					this._selectRangeEnd(null);
-				} else if (this._selected) {
-					super.select(null);
-				} else if (this._selectedRangeEnd) {
-					this._selectRangeEnd(null);
-				}
-			} else if (!this._selected || this._selectedRangeEnd) {
-				if (this._selectedRangeEnd) {
-					this._selectRangeEnd(null);
-				}
-				super.select(date);
-			} else {
-				if (date < this._selected) {
-					const swap = this._selected;
-					super.select(date);
-					this._selectRangeEnd(swap);
-				} else if (date >= this._selected) { // notice date === this._selected is not skipped
-					this._selectRangeEnd(date);
-				}
-			}
-		}
-	}
+  selectRangeEnd(date: D): void {
+    if (!this.range) {
+      super.select(date);
+    } else {
+      if (!date) {
+        if (this._selected && this._selectedRangeEnd) {
+          super.select(null);
+          this._selectRangeEnd(null);
+        } else if (this._selected) {
+          super.select(null);
+        } else if (this._selectedRangeEnd) {
+          this._selectRangeEnd(null);
+        }
+      } else if (!this._selected || this._selectedRangeEnd) {
+        if (this._selectedRangeEnd) {
+          this._selectRangeEnd(null);
+        }
+        super.select(date);
+      } else {
+        if (date < this._selected) {
+          const swap = this._selected;
+          super.select(date);
+          this._selectRangeEnd(swap);
+        } else if (date >= this._selected) { // notice date === this._selected is not skipped
+          this._selectRangeEnd(date);
+        }
+      }
+    }
+  }
 
-	_userSelection(): void {
-		if(this.applyButton) return;
+  _userSelection(): void {
+    if (this.applyButton) {
+      return;
+    }
 
-		if ( !this._range || (this._selected && this._selectedRangeEnd) ) {
-			this.close();
-		}
-	}
+    if ( !this.range || (this._selected && this._selectedRangeEnd) ) {
+      this.close();
+    }
+  }
 
-	applyRange(): void {
-		this.close();
-		this.apply.emit()
-	}
+  applyRange(): void {
+    this.close();
+    this.apply.emit({ startDate: this._selected, endDate: this._selectedRangeEnd });
+  }
 
-	clearRange(): void {
-		this._datepickerInput.value = null
-		this._clearRangeEnd.next()
-	}
+  clearRange(): void {
+    this._datepickerInput.value = null;
+    this.clearRangeEnd.next();
+  }
 
-	_getViews(){
-		if(this.dualView){
-			return [0,1]
-		}
-		return  [0]
-	}
+  _getViews(){
+    if (this.dualView) {
+      return [0, 1];
+    }
+    return  [0];
+  }
 
-	_registerInputRangeEnd(input: MatDatepickerInput<D>): void {
-		if (this._datepickerInputRangeEnd) {
-			throw Error('A MatDatepicker can only be associated with a single range end input.');
-		}
-		this._datepickerInputRangeEnd = input;
-		this._range = !!input;
+  _registerInputRangeEnd(input: MatDatepickerInput<D>): void {
+    if (this.datepickerInputRangeEnd) {
+      throw Error('A MatDatepicker can only be associated with a single range end input.');
+    }
+    this.datepickerInputRangeEnd = input;
+    this.range = !!input;
 
-		this._inputRangeEndSubscription.unsubscribe();
-		if (this._range) {
-		this._inputRangeEndSubscription =
-			this._datepickerInputRangeEnd._valueChange.subscribe((value: D | null) => this._selectedRangeEnd = value);
-		}
-	}
+    this.inputRangeEndSubscription.unsubscribe();
+    if (this.range) {
+    this.inputRangeEndSubscription =
+      this.datepickerInputRangeEnd._valueChange.subscribe((value: D | null) => this._selectedRangeEnd = value);
+    }
+  }
 
-	_unregisterInputRangeEnd(input?: MatDatepickerInput<D>): void {
-		if (this._datepickerInputRangeEnd) {
-			if (!input || input === this._datepickerInputRangeEnd) {
-				this._datepickerInputRangeEnd = undefined;
-				this._range = false;
-				this._inputRangeEndSubscription.unsubscribe();
-			}
-		}
-	}
+  _unregisterInputRangeEnd(input?: MatDatepickerInput<D>): void {
+    if (this.datepickerInputRangeEnd) {
+      if (!input || input === this.datepickerInputRangeEnd) {
+        this.datepickerInputRangeEnd = undefined;
+        this.range = false;
+        this.inputRangeEndSubscription.unsubscribe();
+      }
+    }
+  }
 
-	private _selectRangeEnd(date: D): void {
-		const oldValue = this._selectedRangeEnd;
-		this._selectedRangeEnd = date;
-		if (!this._drDateAdapter.sameDate(oldValue, this._selectedRangeEnd)) {
-			this._selectedChangedRangeEnd.next(this._selectedRangeEnd);
-		}
-	}
+  private _selectRangeEnd(date: D): void {
+    const oldValue = this._selectedRangeEnd;
+    this._selectedRangeEnd = date;
+    if (!this.drDateAdapter.sameDate(oldValue, this._selectedRangeEnd)) {
+      this.selectedChangedRangeEnd.next(this._selectedRangeEnd);
+    }
+  }
 
-	private _setCustomRanges(){
-		if(this._customRanges.length){
-			this.customRanges = this._customRanges
-		}else{
-			this.customRanges = DEFAULT_DATES_RANGES.map(range => {
-				return {
-					name: range.name, 
-					startDate: range.startDate ? this._drDateAdapter.createDate(range.startDate.getFullYear(), range.startDate.getMonth(), range.startDate.getDate()) : null,
-					endDate: range.endDate ? this._drDateAdapter.createDate(range.endDate.getFullYear(), range.endDate.getMonth(), range.endDate.getDate()) : null
-				}
-			})
-		}
-	}
+  private _setCustomRanges(){
+    if (this.customRangesValues.length) {
+      this.customRanges = this.customRangesValues;
+    } else {
+      this.customRanges = DEFAULT_DATES_RANGES.map(range => {
+        return {
+          name: range.name,
+          startDate: range.startDate ?
+            this.drDateAdapter.createDate(range.startDate.getFullYear(), range.startDate.getMonth(), range.startDate.getDate()) :
+            null,
+          endDate: range.endDate ?
+            this.drDateAdapter.createDate(range.endDate.getFullYear(), range.endDate.getMonth(), range.endDate.getDate()) :
+            null
+        };
+      });
+    }
+  }
 }
 

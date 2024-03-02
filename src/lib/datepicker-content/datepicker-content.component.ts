@@ -39,7 +39,7 @@ export class MatDaterangepickerContent<D> extends MatDatepickerContent<D> implem
 
 	setHoverCells = new BehaviorSubject<any>(null)
 	clearBody = new BehaviorSubject<boolean>(null)
-	
+
 	@ViewChildren(MatDaterangeCalendar) calendars: QueryList<MatDaterangeCalendar<D>>
 
 	ngOnInit(){
@@ -68,22 +68,22 @@ export class MatDaterangepickerContent<D> extends MatDatepickerContent<D> implem
 
 	setCustomRange(range){
 		if(!range.startDate || !range.endDate) return;
-		this.datepicker._selected = range.startDate
-		this.drDatepicker._selectedRangeEnd = range.endDate
-		this.datepicker._selectedChanged.next(range.startDate)
-		this.drDatepicker._selectedChangedRangeEnd.next(range.endDate)
-		this.setActiveDate(range.startDate, range.endDate)
+		this.datepicker._selected = range.startDate;
+		this.drDatepicker._selectedRangeEnd = range.endDate;
+		this.datepicker._selectedChanged.next(range.startDate);
+		this.drDatepicker.selectedChangedRangeEnd.next(range.endDate);
+		this.setActiveDate(range.startDate, range.endDate);
 	}
 
 	isSameRange(range){
 		if(!this.datepicker._selected || !this.drDatepicker._selectedRangeEnd || !range.startDate || !range.endDate) return;
-		return this.drDatepicker._drDateAdapter.compareDate(range.startDate, this.datepicker._selected) == 0  && 
-		this.drDatepicker._drDateAdapter.compareDate(range.endDate, this.drDatepicker._selectedRangeEnd) == 0
+		return this.drDatepicker.drDateAdapter.compareDate(range.startDate, this.datepicker._selected) === 0  &&
+		this.drDatepicker.drDateAdapter.compareDate(range.endDate, this.drDatepicker._selectedRangeEnd) === 0
 	}
 
 	isSomeRange(){
-		if(!this.datepicker._selected || !this.drDatepicker._selectedRangeEnd) return false;
-		return this.drDatepicker.customRanges.some(range => this.isSameRange(range))
+		if (!this.datepicker._selected || !this.drDatepicker._selectedRangeEnd) return false;
+		return this.drDatepicker.customRanges.some(range => this.isSameRange(range));
 	}
 
 	getWidthDateRangePicker(){
@@ -99,11 +99,11 @@ export class MatDaterangepickerContent<D> extends MatDatepickerContent<D> implem
 	}
 
 	setActiveDate(from: D, to: D){
-		const fromMonth = this.drDatepicker._drDateAdapter.getMonth(from)
-		const toMonth = this.drDatepicker._drDateAdapter.getMonth(to)
+		const fromMonth = this.drDatepicker.drDateAdapter.getMonth(from)
+		const toMonth = this.drDatepicker.drDateAdapter.getMonth(to)
 
-		const toYear = this.drDatepicker._drDateAdapter.getYear(to)
-		const toDate = this.drDatepicker._drDateAdapter.getDate(to)
+		const toYear = this.drDatepicker.drDateAdapter.getYear(to)
+		const toDate = this.drDatepicker.drDateAdapter.getDate(to)
 
 		let y, m
 		if(toMonth === 11){
@@ -113,7 +113,7 @@ export class MatDaterangepickerContent<D> extends MatDatepickerContent<D> implem
 			m = toMonth + 1,
 			y = toYear
 		}
-		const endDate = this.drDatepicker._drDateAdapter.createDate(y, m, 1)
+		const endDate = this.drDatepicker.drDateAdapter.createDate(y, m, 1)
 
 		this.calendars.forEach((calendar, i) => {
 			if(i === 0){

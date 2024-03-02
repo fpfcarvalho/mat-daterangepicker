@@ -74,7 +74,7 @@ export class MatDaterangepickerInputEnd<D> extends MatDatepickerInput<D> impleme
 				@Optional() public _drDateAdapter: DateAdapter<D>,
 				@Optional() @Inject(MAT_DATE_FORMATS) private _drDateFormats: MatDateFormats,
 				@Optional() private _drFormField: MatFormField) {
-		super(_drElementRef, _drDateAdapter, _drDateFormats, _drFormField); 
+		super(_drElementRef, _drDateAdapter, _drDateFormats, _drFormField);
 	}
 
 	ngAfterViewInit(){
@@ -100,7 +100,7 @@ export class MatDaterangepickerInputEnd<D> extends MatDatepickerInput<D> impleme
 
 	ngAfterContentInit() {
 		if (this._datepicker) {
-			this._matDatepickerSubscription = this._matDaterangepickerEnd._selectedChangedRangeEnd.subscribe((selected: D) => {
+			this._matDatepickerSubscription = this._matDaterangepickerEnd.selectedChangedRangeEnd.subscribe((selected: D) => {
 				this.value = selected;
 				this._drCvaOnChange(selected);
 				this._onTouched();
@@ -109,7 +109,7 @@ export class MatDaterangepickerInputEnd<D> extends MatDatepickerInput<D> impleme
 			})
 
 			//runs every clear range end
-			this._drDatepickerClearSubscription = this._matDaterangepickerEnd._clearRangeEnd.subscribe(() => {
+			this._drDatepickerClearSubscription = this._matDaterangepickerEnd.clearRangeEnd.subscribe(() => {
 				this.value = null
 				this._drCvaOnChange(null);
 			})

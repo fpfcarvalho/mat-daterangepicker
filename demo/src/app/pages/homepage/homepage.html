@@ -9,12 +9,20 @@
 		</div>
 		<div *ngIf="formOptions.getRawValue() as options" class="example-daterangepicker">
 			<mat-form-field>
-				<input matInput [matDatepicker]="dpRange" type="text" [value]="startDate" placeholder="Start Date">
-				<mat-daterangepicker #dpRange [touchUi]="options.touchUi" [dualView]="options.dualView" [applyButton]="options.applyButton" [showCustomRanges]="options.showCustomRanges"></mat-daterangepicker>
-			</mat-form-field>
-			<mat-form-field>
-				<input matInput [matDaterangepickerEnd]="dpRange" type="text" [value]="endDate" placeholder="End Date">
+				<input matInput type="text" [value]="fullDate" placeholder="Full Date">
+				<mat-daterangepicker
+				  #dpRange
+				  [touchUi]="options.touchUi"
+				  [dualView]="options.dualView"
+				  [applyButton]="options.applyButton"
+				  [showCustomRanges]="options.showCustomRanges"
+				  (apply)="xpto($event)"></mat-daterangepicker>
+				<input matInput [matDatepicker]="dpRange" type="text" [value]="startDate" placeholder="Start Date" style="display: none">
 				<mat-datepicker-toggle matSuffix [for]="dpRange"></mat-datepicker-toggle>
+			</mat-form-field>
+			<mat-form-field style="display: none">
+				<input matInput [matDaterangepickerEnd]="dpRange" type="text" [value]="endDate" placeholder="End Date">
+
 			</mat-form-field>
 		</div>
 		<mat-tab-group class="source-example">
